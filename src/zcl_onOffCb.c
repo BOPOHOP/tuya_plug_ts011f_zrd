@@ -42,7 +42,7 @@ static ev_timer_event_t *onWithTimedOffTimerEvt = NULL;
  * FUNCTIONS
  */
 
-void app_onOffUpdate(u8 ep, u8 cmd);
+void app_onOffUpdate(uint8_t ep, uint8_t cmd);
 
 /*********************************************************************
  * @fn      app_onOffInit
@@ -73,7 +73,7 @@ void app_onOffInit()
  *
  * @return  None
  */
-void app_onOffUpdate(u8 ep, u8 cmd)
+void app_onOffUpdate(uint8_t ep, uint8_t cmd)
 {
     zcl_onOffAttr_t *pOnOff = zcl_onOffAttrsGet();
     pOnOff += (ep-1);
@@ -104,12 +104,22 @@ void app_onOffUpdate(u8 ep, u8 cmd)
 
 #ifdef ZCL_SCENE
     zcl_sceneAttr_t *pScene = zcl_sceneAttrGet();
+    pScene += (ep-1);
     pScene->sceneValid = 0;
 #endif
 
-    //TODO: On and Off
-
-//    light_refresh(LIGHT_STA_ON_OFF);
+    switch (onOff) {
+        case ZCL_ONOFF_STATUS_ON:
+//            printf("ep: %d, cmd on\r\n", ep);
+            cmdOnOff_on(ep);
+            break;
+        case ZCL_ONOFF_STATUS_OFF:
+//            printf("ep: %d, cmd off\r\n", ep);
+            cmdOnOff_off(ep);
+            break;
+        default:
+            break;
+    }
 }
 
 /*********************************************************************
@@ -117,14 +127,16 @@ void app_onOffUpdate(u8 ep, u8 cmd)
  *
  * @brief   timer event to process the ON_WITH_TIMED_OFF command
  *
- * @param   arg
+ * @param   arg - endpoint
  *
  * @return  0: timer continue on; -1: timer will be canceled
  */
-static s32 app_onWithTimedOffTimerCb(void *arg)
-{
+static s32 app_onWithTimedOffTimerCb(void *arg) {
+
+    uint8_t ep = (uint8_t)((uint32_t)arg);
+
     zcl_onOffAttr_t *pOnOff = zcl_onOffAttrsGet();
-    u8 ep = 1;
+    pOnOff += (ep-1);
 
     if ((pOnOff->onOff == ZCL_ONOFF_STATUS_ON) && pOnOff->onTime) {
         pOnOff->onTime--;
@@ -155,16 +167,16 @@ static s32 app_onWithTimedOffTimerCb(void *arg)
  *
  * @brief   start the onWithTimedOff timer
  *
- * @param
+ * @param endpoint
  *
  * @return
  */
-static void app_onWithTimedOffTimerStart(void)
+static void app_onWithTimedOffTimerStart(uint8_t ep)
 {
     if (onWithTimedOffTimerEvt) {
         TL_ZB_TIMER_CANCEL(&onWithTimedOffTimerEvt);
     }
-    onWithTimedOffTimerEvt = TL_ZB_TIMER_SCHEDULE(app_onWithTimedOffTimerCb, NULL, ZCL_ONOFF_TIMER_INTERVAL);
+    onWithTimedOffTimerEvt = TL_ZB_TIMER_SCHEDULE(app_onWithTimedOffTimerCb, (void *)((uint32_t)ep), ZCL_ONOFF_TIMER_INTERVAL);
 }
 
 /*********************************************************************
@@ -176,7 +188,7 @@ static void app_onWithTimedOffTimerStart(void)
  *
  * @return  None
  */
-static void app_onoff_onWithTimedOffProcess(u8 ep, zcl_onoff_onWithTimeOffCmd_t *cmd)
+static void app_onoff_onWithTimedOffProcess(uint8_t ep, zcl_onoff_onWithTimeOffCmd_t *cmd)
 {
     zcl_onOffAttr_t *pOnOff = zcl_onOffAttrsGet();
     pOnOff += (ep-1);
@@ -195,7 +207,7 @@ static void app_onoff_onWithTimedOffProcess(u8 ep, zcl_onoff_onWithTimeOffCmd_t 
 
     if ((pOnOff->onTime < 0xFFFF) && (pOnOff->offWaitTime < 0xFFFF)) {
         if(pOnOff->onTime || pOnOff->offWaitTime){
-            app_onWithTimedOffTimerStart();
+            app_onWithTimedOffTimerStart(ep);
         }
     }
 }
@@ -209,7 +221,7 @@ static void app_onoff_onWithTimedOffProcess(u8 ep, zcl_onoff_onWithTimeOffCmd_t 
  *
  * @return  None
  */
-static void app_onoff_offWithEffectProcess(u8 ep, zcl_onoff_offWithEffectCmd_t *cmd)
+static void app_onoff_offWithEffectProcess(uint8_t ep, zcl_onoff_offWithEffectCmd_t *cmd)
 {
     zcl_onOffAttr_t *pOnOff = zcl_onOffAttrsGet();
     pOnOff += (ep-1);
@@ -225,13 +237,14 @@ static void app_onoff_offWithEffectProcess(u8 ep, zcl_onoff_offWithEffectCmd_t *
  *
  * @brief
  *
- * @param   cmd
+ * @param   endpoint
  *
  * @return  None
  */
-static void app_onoff_onWithRecallGlobalSceneProcess(void)
+static void app_onoff_onWithRecallGlobalSceneProcess(uint8_t ep)
 {
     zcl_onOffAttr_t *pOnOff = zcl_onOffAttrsGet();
+    pOnOff += (ep-1);
     pOnOff->globalSceneControl = TRUE;
 
     //TODO:
@@ -248,9 +261,9 @@ static void app_onoff_onWithRecallGlobalSceneProcess(void)
  *
  * @return  status_t
  */
-status_t app_onOffCb(zclIncomingAddrInfo_t *pAddrInfo, u8 cmdId, void *cmdPayload) {
+status_t app_onOffCb(zclIncomingAddrInfo_t *pAddrInfo, uint8_t cmdId, void *cmdPayload) {
 
-    printf("app_onOffCb\r\n");
+//    printf("app_onOffCb\r\n");
 
     if (pAddrInfo->dstEp == APP_ENDPOINT1) {
         switch (cmdId) {
@@ -263,7 +276,7 @@ status_t app_onOffCb(zclIncomingAddrInfo_t *pAddrInfo, u8 cmdId, void *cmdPayloa
             app_onoff_offWithEffectProcess(pAddrInfo->dstEp , (zcl_onoff_offWithEffectCmd_t *)cmdPayload);
             break;
         case ZCL_CMD_ON_WITH_RECALL_GLOBAL_SCENE:
-            app_onoff_onWithRecallGlobalSceneProcess();
+            app_onoff_onWithRecallGlobalSceneProcess(pAddrInfo->dstEp);
             break;
         case ZCL_CMD_ON_WITH_TIMED_OFF:
             app_onoff_onWithTimedOffProcess(pAddrInfo->dstEp , (zcl_onoff_onWithTimeOffCmd_t *)cmdPayload);
