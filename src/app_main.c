@@ -210,6 +210,8 @@ void user_init(bool isRetention)
     /* Initialize user application */
     user_app_init();
 
+//    app_onOffInit();
+
     /* Register except handler for test */
     sys_exceptHandlerRegister(app_sysException);
 
