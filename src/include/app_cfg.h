@@ -63,8 +63,10 @@ extern "C" {
 
 #include "version_cfg.h"
 
+#define TEST_SAVE_ENERGY                OFF
+
 /* Debug mode config */
-#define UART_PRINTF_MODE                OFF
+#define UART_PRINTF_MODE                ON
 #define DEBUG_SAVE	                    OFF
 #define DEBUG_BUTTON                    ON
 #define DEBUG_SWITCH                    OFF
