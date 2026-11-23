@@ -210,6 +210,7 @@ extern "C" {
 #define ZCL_SCENE_SUPPORT                           ON
 #define ZCL_ON_OFF_SUPPORT                          ON
 #define ZCL_OTA_SUPPORT                             ON
+// we need to disable ZCL_GP_SUPPORT for END_DEVICE (ZB_ED_ROLE)
 #define ZCL_GP_SUPPORT                              ON
 #define ZCL_METERING_SUPPORT                        ON
 #define ZCL_ELECTRICAL_MEASUREMENT_SUPPORT          ON

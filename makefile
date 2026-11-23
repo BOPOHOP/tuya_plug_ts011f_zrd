@@ -8,7 +8,8 @@ COMPILE_OS = $(shell uname -o)
 LINUX_OS = GNU/Linux
 
 ifeq ($(COMPILE_OS),$(LINUX_OS))	
-	COMPILE_PREFIX = /opt/tc32/bin/tc32
+	# COMPILE_PREFIX = /opt/tc32/bin/tc32
+	COMPILE_PREFIX = /opt/telink-IOT/tc32/bin/tc32
 else
 	COMPILE_PREFIX = C:/TelinkSDK/opt/tc32/bin/tc32
 endif
@@ -23,9 +24,11 @@ ARCH	= $(COMPILE_PREFIX)-elf-ar
 SIZE	= $(COMPILE_PREFIX)-elf-size
 
 LIBS := -lzb_router -ldrivers_8258 -lsoft-fp
+#LIBS := -lzb_ed -ldrivers_8258 -lsoft-fp
 
 
 DEVICE_TYPE = -DROUTER=1
+#DEVICE_TYPE = -DEND_DEVICE=1
 MCU_TYPE = -DMCU_CORE_8258=1
 BOOT_FLAG = -DMCU_CORE_8258 -DMCU_STARTUP_8258
 
@@ -79,7 +82,7 @@ GCC_FLAGS := \
 
 ifeq ($(strip $(ZCL_VERSION_FILE)),)
 GCC_FLAGS += \
--DBUILD_DATE="{8,'2','0','2','5','0','7','2','6'}"
+-DBUILD_DATE="{8,'2','0','2','6','1','1','2','3'}"
 else
 GCC_FLAGS += \
 -DBUILD_DATE="{8,$(ZCL_VERSION_FILE)}"
