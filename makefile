@@ -23,12 +23,11 @@ OBJDUMP = $(COMPILE_PREFIX)-elf-objdump
 ARCH	= $(COMPILE_PREFIX)-elf-ar
 SIZE	= $(COMPILE_PREFIX)-elf-size
 
-LIBS := -lzb_router -ldrivers_8258 -lsoft-fp
-#LIBS := -lzb_ed -ldrivers_8258 -lsoft-fp
+# LIBS := -lzb_router -ldrivers_8258 -lsoft-fp
+LIBS := -lzb_ed -ldrivers_8258 -lsoft-fp
+# DEVICE_TYPE = -DROUTER=1
+DEVICE_TYPE = -DEND_DEVICE=1
 
-
-DEVICE_TYPE = -DROUTER=1
-#DEVICE_TYPE = -DEND_DEVICE=1
 MCU_TYPE = -DMCU_CORE_8258=1
 BOOT_FLAG = -DMCU_CORE_8258 -DMCU_STARTUP_8258
 
